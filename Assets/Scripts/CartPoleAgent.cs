@@ -25,6 +25,7 @@ public class CartPoleAgent : MonoBehaviour
 
 	[Header("Fitness calculations")]
 	public float reward = 1;
+	public float centerReward = 0.3f;
 	public float goodSolutionPart = 0.8f;
 	private float startOfGoodSolution = -1;
 
@@ -36,27 +37,37 @@ public class CartPoleAgent : MonoBehaviour
 	{
 		initialPolePos = poleRb.transform.localPosition;
 		poleSprite = poleRb.GetComponent<SpriteRenderer>();
+		startOfGoodSolution = -1;
+	}
+
+	private void Update()
+	{
+		if (PopulationProxy.Instance != null &&
+		    PopulationProxy.Instance.printFitness &&
+		    isAI &&
+		    neuralGenome != null)
+        {
+            float fitnessToDisplay = neuralGenome.Fitness + GetBonusScoreFromTime();
+            fitnessDisplay.text = string.Format("{0:0.0}", fitnessToDisplay);
+        }
+
+		if (!isAI)
+            MoveFromUserInput();
 	}
 
 	private void FixedUpdate()
 	{
 		if (!RailwayDelimiteter.IsInsideLimits(cartRb.transform))
-		{
-			if (neuralGenome != null)
-				neuralGenome.Fitness -= Mathf.Abs(neuralGenome.Fitness) / 3;
-			PopulationProxy.instance.DeactivateAgent(this);
-		}
+			PopulationProxy.Instance.DeactivateAgent(this);
 
-		if (isAI)
+		if (GetPoleRotPart() < 0.5f)
+			PopulationProxy.Instance.DeactivateAgent(this);
+
+		if (isAI && neuralGenome != null)
 		{
 			MoveFromNetwork();
 			neuralGenome.Fitness += ComputeFitnessForThisTick();
-
-			float fitnessToDisplay = neuralGenome.Fitness + GetBonusScoreFromTime();
-			fitnessDisplay.text = string.Format("{0:0.0}", fitnessToDisplay);
 		}
-		else
-			MoveFromUserInput();
 	}
 
 	public void ResetAgent(NeuralGenome newNeuralGenome = null)
@@ -71,8 +82,10 @@ public class CartPoleAgent : MonoBehaviour
 		StopRb(cartRb);
 		StopRb(poleRb);
 
+		//poleRb.transform.SetPositionAndRotation(initialPolePos,
+		                                        //Quaternion.Euler(new Vector3(0, 0, 180)));
 		poleRb.transform.SetPositionAndRotation(initialPolePos,
-		                                        Quaternion.Euler(new Vector3(0, 0, 180)));
+                                                Quaternion.Euler(new Vector3(0, 0, 0)));
 
 		neuralGenome.Fitness = 0;      
 		startOfGoodSolution = -1;
@@ -80,7 +93,7 @@ public class CartPoleAgent : MonoBehaviour
 
 	public void End()
 	{
-		if (startOfGoodSolution > 0)
+		if (startOfGoodSolution >= 0)
 		{
 			neuralGenome.Fitness += GetBonusScoreFromTime();
 			startOfGoodSolution = -1;
@@ -93,7 +106,7 @@ public class CartPoleAgent : MonoBehaviour
 			Vector2.right *
 			Input.GetAxis("Horizontal") *
 			xVelocity *
-			Time.fixedDeltaTime);
+			Time.deltaTime);
 	}
 
 	private void MoveFromNetwork()
@@ -110,14 +123,14 @@ public class CartPoleAgent : MonoBehaviour
 	{
 		var result = new[]
 		{
-			poleRb.transform.localRotation.z,
-			poleRb.transform.localRotation.w,
+			Mathf.Sin(poleRb.transform.localRotation.eulerAngles.z),
 			poleRb.angularVelocity / poleMaxAngVel,
-			cartRb.velocity.x / cartMaxXVel
+			cartRb.velocity.x / cartMaxXVel,
+			GetNormalizedDistFromCenter()
 		};
 
-		Debug.Assert(result.Length == nbOfInputs);
-
+		//Debug.Log(ArrayToStr(result));
+		Debug.Assert(result.Length == nbOfInputs);      
 		return result;
 	}
 
@@ -128,9 +141,8 @@ public class CartPoleAgent : MonoBehaviour
 
 	private float ComputeFitnessForThisTick()
 	{
-		var zAngles = Mathf.Abs(GetPoleRotation());
-		var part = zAngles / 180f;
-
+		var part = GetPoleRotPart();
+  
 		if (part > goodSolutionPart)
 		{
 			var resultPart = Mathf.Pow(part, 4);
@@ -138,10 +150,12 @@ public class CartPoleAgent : MonoBehaviour
 
 			if (startOfGoodSolution < 0)
 				startOfGoodSolution = Time.time;
+			
+			return GetNormalizedDistFromCenter() * centerReward;
 		}
 		else
 		{
-			if (startOfGoodSolution > 0)
+			if (startOfGoodSolution >= 0)
 			{
 				var result = GetBonusScoreFromTime();
 				startOfGoodSolution = -1;            
@@ -153,9 +167,14 @@ public class CartPoleAgent : MonoBehaviour
 		return 0;
 	}
 
+	private float GetPoleRotPart()
+	{
+		return Mathf.Abs(GetPoleRotation()) / 180f;
+	}
+
 	private float GetBonusScoreFromTime()
 	{
-		if (startOfGoodSolution > 0)
+		if (startOfGoodSolution >= 0)
 		{
 			var result = 1 + Time.time - startOfGoodSolution;
 			return Mathf.Pow(result, 3);
@@ -179,5 +198,12 @@ public class CartPoleAgent : MonoBehaviour
 		var rot = poleRb.transform.localRotation.eulerAngles.z;
 	    rot -= 180;      
 		return rot;
+	}
+
+	private float GetNormalizedDistFromCenter()
+	{
+		var delta = Vector3.Distance(transform.position, Vector3.zero);
+        var railwaySize = RailwayDelimiteter.instance.GetComponent<BoxCollider2D>().bounds.extents.x;
+        return delta / railwaySize;
 	}
 }
