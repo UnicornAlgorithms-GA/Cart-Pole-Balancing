@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using GeneticLib.Genome.NeuralGenomes;
+using GeneticLib.Randomness;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -29,9 +30,10 @@ public class CartPoleAgent : MonoBehaviour
 	public float goodSolutionPart = 0.8f;
 	private float startOfGoodSolution = -1;
 
-	public Text fitnessDisplay;
-
+	public Text fitnessDisplay;   
 	public NeuralGenome neuralGenome;
+
+	private float lastRandomTorqueApplication = float.MinValue + 1000;
 
 	private void Start()
 	{
@@ -47,7 +49,7 @@ public class CartPoleAgent : MonoBehaviour
 		    isAI &&
 		    neuralGenome != null)
         {
-            float fitnessToDisplay = neuralGenome.Fitness + GetBonusScoreFromTime();
+			float fitnessToDisplay = GetCurrentFitness();
             fitnessDisplay.text = string.Format("{0:0.0}", fitnessToDisplay);
         }
 
@@ -65,6 +67,17 @@ public class CartPoleAgent : MonoBehaviour
 
 		if (isAI && neuralGenome != null)
 		{
+			if (Time.time > lastRandomTorqueApplication + PopulationProxy.Instance.torqueInterval)
+			{
+				lastRandomTorqueApplication = Time.time;
+
+				poleRb.AddForce(Vector2.right * 
+    				GARandomManager.NextFloat(
+    					-PopulationProxy.Instance.force,
+    					PopulationProxy.Instance.force)
+				);
+			}
+            
 			MoveFromNetwork();
 			neuralGenome.Fitness += ComputeFitnessForThisTick();
 		}
@@ -81,9 +94,7 @@ public class CartPoleAgent : MonoBehaviour
 
 		StopRb(cartRb);
 		StopRb(poleRb);
-
-		//poleRb.transform.SetPositionAndRotation(initialPolePos,
-		                                        //Quaternion.Euler(new Vector3(0, 0, 180)));
+        
 		poleRb.transform.SetPositionAndRotation(initialPolePos,
                                                 Quaternion.Euler(new Vector3(0, 0, 0)));
 
@@ -123,7 +134,7 @@ public class CartPoleAgent : MonoBehaviour
 	{
 		var result = new[]
 		{
-			Mathf.Sin(poleRb.transform.localRotation.eulerAngles.z),
+			Mathf.Sin(poleRb.transform.localRotation.z),
 			poleRb.angularVelocity / poleMaxAngVel,
 			cartRb.velocity.x / cartMaxXVel,
 			GetNormalizedDistFromCenter()
@@ -151,7 +162,7 @@ public class CartPoleAgent : MonoBehaviour
 			if (startOfGoodSolution < 0)
 				startOfGoodSolution = Time.time;
 			
-			return GetNormalizedDistFromCenter() * centerReward;
+			return (1 - Mathf.Abs(GetNormalizedDistFromCenter())) * centerReward * Time.fixedDeltaTime;
 		}
 		else
 		{
@@ -177,7 +188,7 @@ public class CartPoleAgent : MonoBehaviour
 		if (startOfGoodSolution >= 0)
 		{
 			var result = 1 + Time.time - startOfGoodSolution;
-			return Mathf.Pow(result, 3);
+			return Mathf.Pow(result, 1.2f) * reward;
 		}
 		else         
 			return 0;
@@ -202,8 +213,13 @@ public class CartPoleAgent : MonoBehaviour
 
 	private float GetNormalizedDistFromCenter()
 	{
-		var delta = Vector3.Distance(transform.position, Vector3.zero);
+		var delta = cartRb.transform.position.x - transform.position.x;
         var railwaySize = RailwayDelimiteter.instance.GetComponent<BoxCollider2D>().bounds.extents.x;
-        return delta / railwaySize;
+		return delta / railwaySize;
+	}
+
+	public float GetCurrentFitness()
+	{
+		return neuralGenome.Fitness + GetBonusScoreFromTime();
 	}
 }

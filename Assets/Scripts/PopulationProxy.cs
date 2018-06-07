@@ -23,6 +23,7 @@ using GeneticLib.Neurology.NeuralModels;
 using GeneticLib.Neurology.NeuronValueModifiers;
 using GeneticLib.Utils.NeuralUtils;
 using GeneticLib.Utils.Graph;
+using MoreLinq;
 
 public class PopulationProxy : MonoBehaviour
 {
@@ -42,7 +43,7 @@ public class PopulationProxy : MonoBehaviour
 		"./Submodules/MachineLearningPyGraphUtils/PyNeuralNetDrawer.py";
     private static readonly string pyFitnessGraphPath =
 		"../Submodules/MachineLearningPyGraphUtils/DrawGraph.py";
-	private NeuralNetDrawer neuralNetDrawer;
+	private NeuralNetDrawer neuralNetDrawer = null;
 
 	// Unity stuff
 	public GameObject agentPrefab;
@@ -51,8 +52,11 @@ public class PopulationProxy : MonoBehaviour
 	[Header("Configs")]
 	public float lifeSpan = 10f;
 	private float startTime;
-
 	public bool printFitness = true;
+
+	[Header("Random torque")]
+	public float force = 0.01f;
+	public float torqueInterval = 0.5f;
 
 	[Header("Genetics configurations")]
 	public int genomesCount = 50;
@@ -87,12 +91,18 @@ public class PopulationProxy : MonoBehaviour
 		NeuralNetDrawer.pyGraphDrawerPath = pyNeuralNetGraphDrawerPath;
 		NeuralNetDrawer.pyAssemblyCmd = "/usr/local/bin/python3";
         PyDrawGraph.pyGraphDrawerFilePath = pyFitnessGraphPath;
-		//neuralNetDrawer = new NeuralNetDrawer(false);
+		neuralNetDrawer = new NeuralNetDrawer(false);
 
 		InitAgents();
         InitGenetics();
         AssignBrains();
-		//DrawBestGenome();
+		DrawBestGenome();
+	}
+
+	private void LateUpdate()
+	{
+		if (Mathf.RoundToInt(Time.time * 10) % 2 == 0)
+			CameraFollowBest();
 	}
 
 	private void FixedUpdate()
@@ -144,9 +154,9 @@ public class PopulationProxy : MonoBehaviour
 		var model = new NeuralModelBase();
 		model.defaultWeightInitializer = () => GARandomManager.NextFloat(-1, 1);;
 
-        model.WeightConstraints = new Tuple<float, float>(-20f, 20f);
+        model.WeightConstraints = new Tuple<float, float>(-50f, 50f);
 
-        var bias = model.AddBiasNeuron();
+        //var bias = model.AddBiasNeuron();
         var layers = new List<Neuron[]>()
         {
 		    model.AddInputNeurons(CartPoleAgent.nbOfInputs).ToArray(),
@@ -156,15 +166,7 @@ public class PopulationProxy : MonoBehaviour
                 {
 				    ValueModifiers = new[] { Dropout.DropoutFunc(dropoutValue) },
                 },
-                count: 5
-            ).ToArray(),
-
-            model.AddNeurons(
-                new Neuron(-1, ActivationFunctions.TanH)
-                {
-				    ValueModifiers = new[] { Dropout.DropoutFunc(dropoutValue) },
-                },
-                count: 5
+                count: 7
             ).ToArray(),
 
             model.AddOutputNeurons(
@@ -174,7 +176,7 @@ public class PopulationProxy : MonoBehaviour
         };
 
         model.ConnectLayers(layers);
-        model.ConnectBias(bias, layers.Skip(1));
+        //model.ConnectBias(bias, layers.Skip(1));
         
         var initialGenerationGenerator = new NeuralInitialGenerationCreatorBase(
             model,
@@ -211,7 +213,7 @@ public class PopulationProxy : MonoBehaviour
 		foreach (var agent in agents)
 			agent.End();
 
-		//DrawBestGenome();
+		DrawBestGenome();
 
 		geneticManager.Evolve();
 		AssignBrains();
@@ -256,4 +258,11 @@ public class PopulationProxy : MonoBehaviour
 		neuralNetDrawer.QueueNeuralNetJson(str);
     }
 	#endregion
+
+	private void CameraFollowBest()
+	{
+		var best = agents.Where(x => x.gameObject.activeSelf)
+		                 .MaxBy(x => x.GetCurrentFitness());
+		SmoothFollow.instance.target = best.cartRb.transform;
+	}
 }

@@ -244,12 +244,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   isAI: 1
   xVelocity: 1000
-  poleMaxAngVel: 130
+  poleMaxAngVel: 150
   cartMaxXVel: 30
   cartRb: {fileID: 50228601788081896}
   poleRb: {fileID: 50324909720751542}
   reward: 1
-  centerReward: 50
+  centerReward: 0
   goodSolutionPart: 0.8
   fitnessDisplay: {fileID: 114887220404591230}
 --- !u!114 &114356901153783466
@@ -321,7 +321,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: 99999
+  m_Text: 
 --- !u!212 &212037876171681270
 SpriteRenderer:
   m_ObjectHideFlags: 1
@@ -403,7 +403,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_Sprite: {fileID: 21300000, guid: c3c34e396a46f4439925b24e67779a5d, type: 3}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.103773594, g: 0.009300461, b: 0.009300461, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
