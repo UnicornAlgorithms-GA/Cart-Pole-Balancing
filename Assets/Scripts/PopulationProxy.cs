@@ -24,6 +24,11 @@ using GeneticLib.Neurology.NeuronValueModifiers;
 using GeneticLib.Utils.NeuralUtils;
 using GeneticLib.Utils.Graph;
 using MoreLinq;
+using System.Reactive;
+using System.Reactive.Linq;
+using System.Threading.Tasks;
+using System.Diagnostics;
+using UnityEngine.UI;
 
 public class PopulationProxy : MonoBehaviour
 {
@@ -53,10 +58,11 @@ public class PopulationProxy : MonoBehaviour
 	public float lifeSpan = 10f;
 	private float startTime;
 	public bool printFitness = true;
+	public Text generationCounter;
 
-	[Header("Random torque")]
+	[Header("Random force")]
 	public float force = 0.01f;
-	public float torqueInterval = 0.5f;
+	public float forceInterval = 0.5f;
 
 	[Header("Genetics configurations")]
 	public int genomesCount = 50;
@@ -72,15 +78,24 @@ public class PopulationProxy : MonoBehaviour
 	public float reinsertionPart = 0.2f;
 
 	public float dropoutValue = 0.1f;
+	private GeneticManagerClassic geneticManager;
 
-    GeneticManagerClassic geneticManager;
+	[Header("Fitness calculations")]
+	public float balanceRewardExp = 1.5f;
+    public float centerReward = 0.3f;
+    public float goodSolutionPart = 0.8f;
+
+	[Header("General configs")]
+	public float startingAngle = 0;
+	public Vector3 startingPos = Vector3.zero;
+	public float removeAgentIfBelowAnglePart = 0.6f;
 
 	public PopulationProxy()
 	{      
 		NeuralGenomeToJSONExtension.distBetweenNodes *= 5;
         NeuralGenomeToJSONExtension.randomPosTries = 10;
         NeuralGenomeToJSONExtension.xPadding = 0.03f;
-        NeuralGenomeToJSONExtension.yPadding = 0.03f;      
+        NeuralGenomeToJSONExtension.yPadding = 0.03f;
 	}
     
 	private void Start()
@@ -97,6 +112,7 @@ public class PopulationProxy : MonoBehaviour
         InitGenetics();
         AssignBrains();
 		DrawBestGenome();
+        
 	}
 
 	private void LateUpdate()
@@ -106,7 +122,7 @@ public class PopulationProxy : MonoBehaviour
 	}
 
 	private void FixedUpdate()
-	{
+	{      
 		if (Time.time > startTime + lifeSpan)
 			Evolve();
 	}
@@ -208,8 +224,31 @@ public class PopulationProxy : MonoBehaviour
 		geneticManager.Init();
 	}
 
+	private void ComputeNetworksAsync()
+	{
+		//var querry = agents.ToObservable()
+		//				   .Select(a =>
+		//{
+		//	var i = a.GenerateNetworkInputs();
+		//	return Observable.Start(() => a.ComputeNetwork(i));
+		//});
+
+		//if (agents == null)
+		//	return;
+		//var querry =
+		//	from a in agents.ToObservable()
+		//	where a.gameObject.activeSelf
+
+		//	let i = a.GenerateNetworkInputs()
+		//	from n in Observable.Start(() => a.ComputeNetwork(i))
+		//	select n;
+		
+		//querry.ToArray().Wait();
+	}
+
 	public void Evolve()
 	{
+		CurriculumLearningProxy.instance.CheckForStateUpdate();
 		foreach (var agent in agents)
 			agent.End();
 
@@ -217,6 +256,8 @@ public class PopulationProxy : MonoBehaviour
 
 		geneticManager.Evolve();
 		AssignBrains();
+
+		generationCounter.text = "Generation: " + geneticManager.GenerationNumber;
 	}
 
 	private MutationManager InitMutations()
@@ -261,8 +302,10 @@ public class PopulationProxy : MonoBehaviour
 
 	private void CameraFollowBest()
 	{
-		var best = agents.Where(x => x.gameObject.activeSelf)
-		                 .MaxBy(x => x.GetCurrentFitness());
+		var active = agents.Where(x => x.gameObject.activeSelf).ToArray();
+		if (active.Length == 0)
+			return;
+		var best = active.MaxBy(x => x.GetCurrentFitness());
 		SmoothFollow.instance.target = best.cartRb.transform;
 	}
 }

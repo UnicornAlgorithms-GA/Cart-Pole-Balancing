@@ -1,6 +1,10 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using GeneticLib.Genome.NeuralGenomes;
 using GeneticLib.Randomness;
 using UnityEngine;
@@ -21,23 +25,17 @@ public class CartPoleAgent : MonoBehaviour
 
 	public Rigidbody2D cartRb;   
 	public Rigidbody2D poleRb;
-	private Vector3 initialPolePos;
 	private SpriteRenderer poleSprite;
 
-	[Header("Fitness calculations")]
-	public float reward = 1;
-	public float centerReward = 0.3f;
-	public float goodSolutionPart = 0.8f;
 	private float startOfGoodSolution = -1;
 
 	public Text fitnessDisplay;   
 	public NeuralGenome neuralGenome;
 
 	private float lastRandomTorqueApplication = float.MinValue + 1000;
-
+       
 	private void Start()
 	{
-		initialPolePos = poleRb.transform.localPosition;
 		poleSprite = poleRb.GetComponent<SpriteRenderer>();
 		startOfGoodSolution = -1;
 	}
@@ -62,12 +60,12 @@ public class CartPoleAgent : MonoBehaviour
 		if (!RailwayDelimiteter.IsInsideLimits(cartRb.transform))
 			PopulationProxy.Instance.DeactivateAgent(this);
 
-		if (GetPoleRotPart() < 0.5f)
+		if (GetPoleRotPart() < PopulationProxy.Instance.removeAgentIfBelowAnglePart)
 			PopulationProxy.Instance.DeactivateAgent(this);
 
 		if (isAI && neuralGenome != null)
 		{
-			if (Time.time > lastRandomTorqueApplication + PopulationProxy.Instance.torqueInterval)
+			if (Time.time > lastRandomTorqueApplication + PopulationProxy.Instance.forceInterval)
 			{
 				lastRandomTorqueApplication = Time.time;
 
@@ -86,7 +84,10 @@ public class CartPoleAgent : MonoBehaviour
 	public void ResetAgent(NeuralGenome newNeuralGenome = null)
 	{
 		if (newNeuralGenome != null)
+		{
 			neuralGenome = newNeuralGenome;
+			//feedNetworkTask = new Task(() => neuralGenome.FeedNeuralNetwork(GenerateNetworkInputs()));
+		}
 
 		gameObject.SetActive(true);
 
@@ -94,9 +95,11 @@ public class CartPoleAgent : MonoBehaviour
 
 		StopRb(cartRb);
 		StopRb(poleRb);
-        
-		poleRb.transform.SetPositionAndRotation(initialPolePos,
-                                                Quaternion.Euler(new Vector3(0, 0, 0)));
+
+		var startingRotation = new Vector3(
+			0, 0, PopulationProxy.Instance.startingAngle);
+		poleRb.transform.SetPositionAndRotation(PopulationProxy.Instance.startingPos,
+		                                        Quaternion.Euler(startingRotation));
 
 		neuralGenome.Fitness = 0;      
 		startOfGoodSolution = -1;
@@ -124,13 +127,13 @@ public class CartPoleAgent : MonoBehaviour
 	{
 		if (neuralGenome == null)
 			return;
-
+		
 		neuralGenome.FeedNeuralNetwork(GenerateNetworkInputs());
 		var outputs = neuralGenome.Outputs.Select(x => x.Value).ToArray();
 		cartRb.AddForce(Vector2.right * outputs[0] * xVelocity * Time.fixedDeltaTime);
 	}
 
-	private float[] GenerateNetworkInputs()
+	public float[] GenerateNetworkInputs()
 	{
 		var result = new[]
 		{
@@ -150,11 +153,11 @@ public class CartPoleAgent : MonoBehaviour
 		return string.Join(", ", array.Select(x => x.ToString()));
 	}
 
-	private float ComputeFitnessForThisTick()
+	public float ComputeFitnessForThisTick()
 	{
 		var part = GetPoleRotPart();
   
-		if (part > goodSolutionPart)
+		if (part > PopulationProxy.Instance.goodSolutionPart)
 		{
 			var resultPart = Mathf.Pow(part, 4);
             poleSprite.color = Color.Lerp(Color.red, Color.green, resultPart);
@@ -162,7 +165,8 @@ public class CartPoleAgent : MonoBehaviour
 			if (startOfGoodSolution < 0)
 				startOfGoodSolution = Time.time;
 			
-			return (1 - Mathf.Abs(GetNormalizedDistFromCenter())) * centerReward * Time.fixedDeltaTime;
+			return (1 - Mathf.Abs(GetNormalizedDistFromCenter()))
+				* PopulationProxy.Instance.centerReward * Time.fixedDeltaTime;
 		}
 		else
 		{
@@ -188,7 +192,7 @@ public class CartPoleAgent : MonoBehaviour
 		if (startOfGoodSolution >= 0)
 		{
 			var result = 1 + Time.time - startOfGoodSolution;
-			return Mathf.Pow(result, 1.2f) * reward;
+			return Mathf.Pow(result, PopulationProxy.Instance.balanceRewardExp);
 		}
 		else         
 			return 0;
