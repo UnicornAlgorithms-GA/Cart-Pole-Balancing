@@ -12,7 +12,7 @@ using UnityEngine.UI;
 
 public class CartPoleAgent : MonoBehaviour
 {
-	public static int nbOfInputs = 4;
+	public static int nbOfInputs = 2;
 
 	public bool isAI = true;
 
@@ -135,6 +135,11 @@ public class CartPoleAgent : MonoBehaviour
 
 	public float[] GenerateNetworkInputs()
 	{
+		return GenerateNetworkInputs2Inputs();
+	}
+
+	public float[] GenerateNetworkInputs4Inputs()
+	{
 		var result = new[]
 		{
 			Mathf.Sin(poleRb.transform.localRotation.z),
@@ -147,6 +152,19 @@ public class CartPoleAgent : MonoBehaviour
 		Debug.Assert(result.Length == nbOfInputs);      
 		return result;
 	}
+
+	public float[] GenerateNetworkInputs2Inputs()
+    {
+        var result = new[]
+        {
+            Mathf.Sin(poleRb.transform.localRotation.z),
+            GetNormalizedDistFromCenter()
+        };
+
+        //Debug.Log(ArrayToStr(result));
+        Debug.Assert(result.Length == nbOfInputs);
+        return result;
+    }
 
 	private string ArrayToStr<T>(T[] array)
 	{

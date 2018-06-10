@@ -167,35 +167,8 @@ public class PopulationProxy : MonoBehaviour
 	#region Genetics
 	private void InitGenetics()
 	{
-		var model = new NeuralModelBase();
-		model.defaultWeightInitializer = () => GARandomManager.NextFloat(-1, 1);;
-
-        model.WeightConstraints = new Tuple<float, float>(-50f, 50f);
-
-        //var bias = model.AddBiasNeuron();
-        var layers = new List<Neuron[]>()
-        {
-		    model.AddInputNeurons(CartPoleAgent.nbOfInputs).ToArray(),
-
-            model.AddNeurons(
-                new Neuron(-1, ActivationFunctions.TanH)
-                {
-				    ValueModifiers = new[] { Dropout.DropoutFunc(dropoutValue) },
-                },
-                count: 7
-            ).ToArray(),
-
-            model.AddOutputNeurons(
-                1,
-			    ActivationFunctions.TanH
-            ).ToArray(),
-        };
-
-        model.ConnectLayers(layers);
-        //model.ConnectBias(bias, layers.Skip(1));
-        
         var initialGenerationGenerator = new NeuralInitialGenerationCreatorBase(
-            model,
+			Init2InputsNeuralModel(),
             new RecursiveNetworkOpBaker());
 
 		//var selection = new EliteSelection();
@@ -224,28 +197,6 @@ public class PopulationProxy : MonoBehaviour
 		geneticManager.Init();
 	}
 
-	private void ComputeNetworksAsync()
-	{
-		//var querry = agents.ToObservable()
-		//				   .Select(a =>
-		//{
-		//	var i = a.GenerateNetworkInputs();
-		//	return Observable.Start(() => a.ComputeNetwork(i));
-		//});
-
-		//if (agents == null)
-		//	return;
-		//var querry =
-		//	from a in agents.ToObservable()
-		//	where a.gameObject.activeSelf
-
-		//	let i = a.GenerateNetworkInputs()
-		//	from n in Observable.Start(() => a.ComputeNetwork(i))
-		//	select n;
-		
-		//querry.ToArray().Wait();
-	}
-
 	public void Evolve()
 	{
 		CurriculumLearningProxy.instance.CheckForStateUpdate();
@@ -258,6 +209,58 @@ public class PopulationProxy : MonoBehaviour
 		AssignBrains();
 
 		generationCounter.text = "Generation: " + geneticManager.GenerationNumber;
+	}
+
+	private INeuralModel Init2InputsNeuralModel()
+	{
+		var model = new NeuralModelBase();
+        model.defaultWeightInitializer = () => GARandomManager.NextFloat(-1, 1); ;
+
+        model.WeightConstraints = new Tuple<float, float>(-50f, 50f);
+
+        var layers = new List<Neuron[]>()
+        {
+            model.AddInputNeurons(CartPoleAgent.nbOfInputs).ToArray(),
+
+            //model.AddNeurons(
+            //    new Neuron(-1, ActivationFunctions.TanH)
+            //    {
+            //        ValueModifiers = new[] { Dropout.DropoutFunc(dropoutValue) },
+            //    },
+            //    count: 7
+            //).ToArray(),
+
+            model.AddOutputNeurons(
+                1,
+                ActivationFunctions.TanH
+            ).ToArray(),
+        };
+
+        model.ConnectLayers(layers);
+
+		var outputNeuron = layers.Last().Last();
+        model.AddConnection(outputNeuron.InnovationNb, outputNeuron.InnovationNb);      
+        return model;
+	}
+
+	private INeuralModel Init4InputsNeuralModel()
+	{
+		var model = new NeuralModelBase();
+        model.defaultWeightInitializer = () => GARandomManager.NextFloat(-1, 1); ;
+
+        model.WeightConstraints = new Tuple<float, float>(-50f, 50f);
+
+        var layers = new List<Neuron[]>()
+        {
+            model.AddInputNeurons(CartPoleAgent.nbOfInputs).ToArray(),
+            model.AddOutputNeurons(
+                1,
+                ActivationFunctions.TanH
+            ).ToArray(),
+        };
+
+        model.ConnectLayers(layers);      
+		return model;
 	}
 
 	private MutationManager InitMutations()
