@@ -12,7 +12,7 @@ using UnityEngine.UI;
 
 public class CartPoleAgent : MonoBehaviour
 {
-	public static int nbOfInputs = 2;
+	public static int nbOfInputs = 4;
 
 	public bool isAI = true;
 
@@ -135,7 +135,8 @@ public class CartPoleAgent : MonoBehaviour
 
 	public float[] GenerateNetworkInputs()
 	{
-		return GenerateNetworkInputs2Inputs();
+		//return GenerateNetworkInputs2Inputs();
+		return GenerateNetworkInputs4Inputs();
 	}
 
 	public float[] GenerateNetworkInputs4Inputs()

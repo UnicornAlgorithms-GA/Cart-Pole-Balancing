@@ -239,7 +239,7 @@ public class PopulationProxy : MonoBehaviour
         model.ConnectLayers(layers);
 
 		var outputNeuron = layers.Last().Last();
-        model.AddConnection(outputNeuron.InnovationNb, outputNeuron.InnovationNb);      
+        model.AddConnection(outputNeuron.InnovationNb, outputNeuron.InnovationNb);
         return model;
 	}
 
@@ -252,14 +252,18 @@ public class PopulationProxy : MonoBehaviour
 
         var layers = new List<Neuron[]>()
         {
-            model.AddInputNeurons(CartPoleAgent.nbOfInputs).ToArray(),
+            model.AddInputNeurons(CartPoleAgent.nbOfInputs).ToArray(),         
             model.AddOutputNeurons(
                 1,
                 ActivationFunctions.TanH
             ).ToArray(),
         };
 
-        model.ConnectLayers(layers);      
+        model.ConnectLayers(layers);
+
+		var outputNeuron = layers.Last().Last();
+        model.AddConnection(outputNeuron.InnovationNb, outputNeuron.InnovationNb);
+
 		return model;
 	}
 
