@@ -10,7 +10,7 @@ public class CurriculumLearningProxy : MonoBehaviour
 	public Animator animator;
 
 	public List<CurriculumState> curriculumStates;
-	private int currentState = 1;
+	private int currentState = 0;
 
 	private void Awake()
 	{
@@ -25,21 +25,20 @@ public class CurriculumLearningProxy : MonoBehaviour
 
 	public void CheckForStateUpdate()
 	{
-		foreach (var state in curriculumStates)
-			state.RegisterNewStateEvents();
+		curriculumStates[currentState].RegisterNewStateEvents();
 
-		var passedState = curriculumStates.FirstOrDefault(
-			x => x.StatePassed && curriculumStates.IndexOf(x) == currentState);
-
-		if (passedState != null)
+		if (curriculumStates[currentState].StatePassed)
 		{
-			var index = curriculumStates.IndexOf(passedState) + 1;
-			animator.Play("State" + index);
-			Debug.Log("State" + index);
-			currentState = index;
+			if (currentState + 1 >= curriculumStates.Count())
+				return;
+			var index = currentState + 1;
 
-			if (curriculumStates.Count >= index)
-				curriculumStates[index - 1].Init();
+			animator.Play("State" + (index + 1));
+			animator.Update(0f);
+			Debug.Log("State" + (index + 1));
+			currentState = index;
+            
+			curriculumStates[index].Init();
 		}
 	}
 }

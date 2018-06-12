@@ -63,6 +63,7 @@ public class PopulationProxy : MonoBehaviour
 	[Header("Random force")]
 	public float force = 0.01f;
 	public float forceInterval = 0.5f;
+	public float forceMultiplier = 1;
 
 	[Header("Genetics configurations")]
 	public int genomesCount = 50;
@@ -168,11 +169,13 @@ public class PopulationProxy : MonoBehaviour
 	private void InitGenetics()
 	{
         var initialGenerationGenerator = new NeuralInitialGenerationCreatorBase(
-			Init2InputsNeuralModel(),
+			Init4InputsNeuralModel(),
             new RecursiveNetworkOpBaker());
 
 		//var selection = new EliteSelection();
-		var selection = new RouletteWheelSelection();
+		//var selection = new RouletteWheelSelection();
+		var selection = new RouletteWheelSelectionWithRepetion();
+
 		var crossover = new OnePointCrossover(true);
 		var breeding = new BreedingClassic(
 			crossoverPart,

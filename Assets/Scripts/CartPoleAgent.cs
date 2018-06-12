@@ -69,10 +69,10 @@ public class CartPoleAgent : MonoBehaviour
 			{
 				lastRandomTorqueApplication = Time.time;
 
+				var force = 
+					PopulationProxy.Instance.force * PopulationProxy.Instance.forceMultiplier;
 				poleRb.AddForce(Vector2.right * 
-    				GARandomManager.NextFloat(
-    					-PopulationProxy.Instance.force,
-    					PopulationProxy.Instance.force)
+    				GARandomManager.NextFloat( -force, force)
 				);
 			}
             
