@@ -170,6 +170,7 @@ public class PopulationProxy : MonoBehaviour
 	{
         var initialGenerationGenerator = new NeuralInitialGenerationCreatorBase(
 			Init4InputsNeuralModel(),
+			//Init2InputsNeuralModel(),
             new RecursiveNetworkOpBaker());
 
 		//var selection = new EliteSelection();
@@ -224,14 +225,6 @@ public class PopulationProxy : MonoBehaviour
         var layers = new List<Neuron[]>()
         {
             model.AddInputNeurons(CartPoleAgent.nbOfInputs).ToArray(),
-
-            //model.AddNeurons(
-            //    new Neuron(-1, ActivationFunctions.TanH)
-            //    {
-            //        ValueModifiers = new[] { Dropout.DropoutFunc(dropoutValue) },
-            //    },
-            //    count: 7
-            //).ToArray(),
 
             model.AddOutputNeurons(
                 1,

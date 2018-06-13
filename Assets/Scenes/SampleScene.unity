@@ -442,7 +442,7 @@ MonoBehaviour:
   statePassed: 0
   requiredGenomesAliveAtTheEnd: 1
   requiredFitnessSum: 0
-  requiredGenerations: 1
+  requiredGenerations: 3
 --- !u!1 &404314013
 GameObject:
   m_ObjectHideFlags: 0
@@ -791,51 +791,7 @@ MonoBehaviour:
   startingAngle: 0
   startingPos: {x: 0, y: 0.93, z: 0}
   removeAgentIfBelowAnglePart: 0.6
---- !u!1 &1044340072
-GameObject:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  serializedVersion: 5
-  m_Component:
-  - component: {fileID: 1044340073}
-  - component: {fileID: 1044340074}
-  m_Layer: 0
-  m_Name: State3
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1044340073
-Transform:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 1044340072}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children: []
-  m_Father: {fileID: 404314014}
-  m_RootOrder: 2
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1044340074
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 1044340072}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 33715bd96b0534064a59a41510c5d8d2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  statePassed: 0
-  requiredGenomesAliveAtTheEnd: 5
-  requiredFitnessSum: 0
-  requiredGenerations: 1
---- !u!21 &1100021320
+--- !u!21 &989971427
 Material:
   serializedVersion: 6
   m_ObjectHideFlags: 0
@@ -919,6 +875,50 @@ Material:
     m_Colors:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+--- !u!1 &1044340072
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  serializedVersion: 5
+  m_Component:
+  - component: {fileID: 1044340073}
+  - component: {fileID: 1044340074}
+  m_Layer: 0
+  m_Name: State3
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1044340073
+Transform:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1044340072}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 404314014}
+  m_RootOrder: 2
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1044340074
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1044340072}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 33715bd96b0534064a59a41510c5d8d2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  statePassed: 0
+  requiredGenomesAliveAtTheEnd: 5
+  requiredFitnessSum: 0
+  requiredGenerations: 1
 --- !u!1 &1114753847
 GameObject:
   m_ObjectHideFlags: 0
@@ -1067,7 +1067,7 @@ MonoBehaviour:
   statePassed: 0
   requiredGenomesAliveAtTheEnd: 3
   requiredFitnessSum: 0
-  requiredGenerations: 1
+  requiredGenerations: 3
 --- !u!4 &1409789443
 Transform:
   m_ObjectHideFlags: 0
@@ -1417,7 +1417,7 @@ SpriteRenderer:
   m_ReflectionProbeUsage: 0
   m_RenderingLayerMask: 4294967295
   m_Materials:
-  - {fileID: 1100021320}
+  - {fileID: 989971427}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

@@ -42,6 +42,7 @@ public class CartPoleAgent : MonoBehaviour
 
 	private void Update()
 	{
+		//Debug.Log(ArrayToStr(GenerateNetworkInputs()));
 		if (PopulationProxy.Instance != null &&
 		    PopulationProxy.Instance.printFitness &&
 		    isAI &&
@@ -143,7 +144,7 @@ public class CartPoleAgent : MonoBehaviour
 	{
 		var result = new[]
 		{
-			Mathf.Sin(poleRb.transform.localRotation.z),
+			GetNormalizedRotation(),
 			poleRb.angularVelocity / poleMaxAngVel,
 			cartRb.velocity.x / cartMaxXVel,
 			GetNormalizedDistFromCenter()
@@ -158,7 +159,7 @@ public class CartPoleAgent : MonoBehaviour
     {
         var result = new[]
         {
-            Mathf.Sin(poleRb.transform.localRotation.z),
+			GetNormalizedRotation(),
             GetNormalizedDistFromCenter()
         };
 
@@ -167,9 +168,14 @@ public class CartPoleAgent : MonoBehaviour
         return result;
     }
 
-	private string ArrayToStr<T>(T[] array)
+	private string ArrayToStr(float[] array)
 	{
-		return string.Join(", ", array.Select(x => x.ToString()));
+		return string.Join(", ", array.Select(x => x.ToString("0.00")));
+	}
+
+	private float GetNormalizedRotation()
+	{
+		return (float)Math.Sin(poleRb.transform.localRotation.eulerAngles.z * Math.PI / 180);
 	}
 
 	public float ComputeFitnessForThisTick()
