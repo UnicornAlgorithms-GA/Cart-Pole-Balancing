@@ -144,7 +144,7 @@ public class CartPoleAgent : MonoBehaviour
 	{
 		var result = new[]
 		{
-			GetNormalizedRotation(),
+			(float)Math.Sin(poleRb.transform.localRotation.eulerAngles.z * Math.PI / 180),
 			poleRb.angularVelocity / poleMaxAngVel,
 			cartRb.velocity.x / cartMaxXVel,
 			GetNormalizedDistFromCenter()
@@ -159,7 +159,7 @@ public class CartPoleAgent : MonoBehaviour
     {
         var result = new[]
         {
-			GetNormalizedRotation(),
+			(float)Math.Sin(poleRb.transform.localRotation.eulerAngles.z * Math.PI / 180),
             GetNormalizedDistFromCenter()
         };
 
@@ -171,11 +171,6 @@ public class CartPoleAgent : MonoBehaviour
 	private string ArrayToStr(float[] array)
 	{
 		return string.Join(", ", array.Select(x => x.ToString("0.00")));
-	}
-
-	private float GetNormalizedRotation()
-	{
-		return (float)Math.Sin(poleRb.transform.localRotation.eulerAngles.z * Math.PI / 180);
 	}
 
 	public float ComputeFitnessForThisTick()

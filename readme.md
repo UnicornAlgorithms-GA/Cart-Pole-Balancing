@@ -1,5 +1,7 @@
 # [Cart-Pole Balancing problem](https://pdfs.semanticscholar.org/a5b9/dc45d2eaf5a3336aa070cafdf4cce2deefbc.pdf) with Neural Nets and GA
 
+![4-input](./aux/cart-pole-4input.gif)
+
 In this project I tried to solve the Cart-Pole Balancing problem with Neural Networks optimized with Genetic Algorithms.
 
 First, the problem was solved with Physic inputs (4-input model):
@@ -15,7 +17,7 @@ The output is [-1; 1] and it determines how much force to apply to the cart each
 
 **Note:** to keep the inputs normalized, the second and the third inputs are divided by a number that's a bit higher than the average angular velocity and respectively, cart's velocity. There are better ways to normalize these 2 inputs.
 
-The minimal solution for the 4-input model stated in the paper would be to have no extra neurons than inputs and outputs. The algorithm did converge to a solution for this minimal model, but I added an extra recursive connection from output to output. With the extra memory, it started to find a solution with about 3-6 generations faster than usual.
+The minimal solution for the 4-input model would be to have no extra neurons than inputs and outputs. The algorithm did converge to a solution for this minimal model, but I added an extra recursive connection from output to output. With the extra memory, it started to find a solution with about 3-6 generations faster than usual.
 
 ![img](./aux/cart-pole-network.png)
 
@@ -34,7 +36,7 @@ The population finishes the task if they get at least one agent to swing up and 
   * about 3-4 more generations without the RNN;
 
 ## The 2-input model
-This model, as stated in the paper, represents a neural network with only 2 inputs and, very importantly, at least 1 RNN. The minimal solution is composed of only 3 neurons and 3 connections (synapses).
+This model represents a neural network with only 2 inputs and, very importantly, at least 1 RNN. The minimal solution is composed of only 3 neurons and 3 connections (synapses).
 
 The inputs are the same as above, without the physical ones.
-Because I the first input is sin() of the angle, it can't possibly be as good as the 4-input model. I believe there's a better way to provide the angle input to the system. 
+Because the first input is sin() of the angle, it can't possibly be as good as the 4-input model. I believe there's a better way to provide the angle input to the system. With that being said, the 2-input model does learn to balance, but it can't handle big random forces, so it stops at the stage 4/8 in the curriculum in about 18-20 generations.
