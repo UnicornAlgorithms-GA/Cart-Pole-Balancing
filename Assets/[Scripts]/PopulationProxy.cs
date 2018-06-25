@@ -169,9 +169,9 @@ public class PopulationProxy : MonoBehaviour
 	private void InitGenetics()
 	{
         var initialGenerationGenerator = new NeuralInitialGenerationCreatorBase(
-			Init4InputsNeuralModel(),
-			//Init2InputsNeuralModel(),
-            new RecursiveNetworkOpBaker());
+			//Init4InputsNeuralModel(),
+			Init2InputsNeuralModel(),
+			new FeedForwardOpBaker());
 
 		//var selection = new EliteSelection();
 		//var selection = new RouletteWheelSelection();
@@ -235,8 +235,11 @@ public class PopulationProxy : MonoBehaviour
         model.ConnectLayers(layers);
 
 		var outputNeuron = layers.Last().Last();
-        model.AddConnection(outputNeuron.InnovationNb, outputNeuron.InnovationNb);
-        return model;
+		var memNeuron = model.AddNeurons(
+			sampleNeuron: new MemoryNeuron(-1, outputNeuron.InnovationNb),
+			count: 1).First();
+		model.AddConnection(memNeuron.InnovationNb, outputNeuron.InnovationNb);
+		return model;
 	}
 
 	private INeuralModel Init4InputsNeuralModel()

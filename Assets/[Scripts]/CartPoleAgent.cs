@@ -12,7 +12,7 @@ using UnityEngine.UI;
 
 public class CartPoleAgent : MonoBehaviour
 {
-	public static int nbOfInputs = 4;
+	public static int nbOfInputs = 2;
 
 	public bool isAI = true;
 
@@ -104,6 +104,8 @@ public class CartPoleAgent : MonoBehaviour
 
 		neuralGenome.Fitness = 0;      
 		startOfGoodSolution = -1;
+
+		neuralGenome.NetworkOperationBaker.BakeNetwork(neuralGenome);
 	}
 
 	public void End()
@@ -136,8 +138,8 @@ public class CartPoleAgent : MonoBehaviour
 
 	public float[] GenerateNetworkInputs()
 	{
-		//return GenerateNetworkInputs2Inputs();
-		return GenerateNetworkInputs4Inputs();
+		return GenerateNetworkInputs2Inputs();
+		//return GenerateNetworkInputs4Inputs();
 	}
 
 	public float[] GenerateNetworkInputs4Inputs()
