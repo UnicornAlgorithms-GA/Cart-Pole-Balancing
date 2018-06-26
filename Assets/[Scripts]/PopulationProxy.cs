@@ -29,6 +29,7 @@ using System.Reactive.Linq;
 using System.Threading.Tasks;
 using System.Diagnostics;
 using UnityEngine.UI;
+using GeneticLib.Neurology.PredefinedStructures.LSTMs;
 
 public class PopulationProxy : MonoBehaviour
 {
@@ -220,8 +221,9 @@ public class PopulationProxy : MonoBehaviour
 		var model = new NeuralModelBase();
         model.defaultWeightInitializer = () => GARandomManager.NextFloat(-1, 1); ;
 
-        model.WeightConstraints = new Tuple<float, float>(-50f, 50f);
+        model.WeightConstraints = new Tuple<float, float>(-5f, 5f);
 
+		var bias = model.AddBiasNeuron();
         var layers = new List<Neuron[]>()
         {
             model.AddInputNeurons(CartPoleAgent.nbOfInputs).ToArray(),
@@ -235,10 +237,27 @@ public class PopulationProxy : MonoBehaviour
         model.ConnectLayers(layers);
 
 		var outputNeuron = layers.Last().Last();
-		var memNeuron = model.AddNeurons(
-			sampleNeuron: new MemoryNeuron(-1, outputNeuron.InnovationNb),
-			count: 1).First();
-		model.AddConnection(memNeuron.InnovationNb, outputNeuron.InnovationNb);
+		//var memNeurons = model.AddNeurons(
+  //          sampleNeuron: new MemoryNeuron(-1, outputNeuron.InnovationNb),
+  //          count: 1
+		//).ToArray();
+
+		// RNN
+
+		//var innerMemNeurons = model.AddNeurons(
+		//	sampleNeuron: new Neuron(-1, ActivationFunctions.TanH),
+		//	count: 1).ToArray();
+
+		//model.ConnectLayers(new[] { memNeurons, innerMemNeurons });
+		//model.ConnectLayers(new[] { layers[0], innerMemNeurons, new[] { outputNeuron } });
+
+		// LSTM
+		Neuron lstmIn, lstmOut;
+		model.AddLSTM(out lstmIn, out lstmOut, biasNeuron: bias);
+		//model.ConnectNeurons(memNeurons, new[] { lstmIn }).ToArray();
+		model.ConnectNeurons(layers[0], new[] { lstmIn }).ToArray();
+		model.ConnectNeurons(new[] { lstmOut }, layers.Last()).ToArray();
+
 		return model;
 	}
 
